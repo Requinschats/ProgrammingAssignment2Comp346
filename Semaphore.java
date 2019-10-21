@@ -1,43 +1,39 @@
-// Source code for semaphore class:    
-
-class Semaphore
-{
+class Semaphore {
     private int value;
-    public Semaphore(int value)
-    {
+    private int mutex;
+
+    public Semaphore(int value) {
         this.value = value;
+        this.mutex = 1;
     }
-    public Semaphore()
-    {
+
+    public Semaphore() {
         this(0);
     }
-    public synchronized void Wait()
-    {
-        while (this.value <= 0)
-        {
-            try
-            {
+
+    public synchronized void Wait() {
+        this.value--;
+        while (this.mutex < 1) {
+            try {
                 wait();
-            }
-            catch(InterruptedException e)
-            {
-                System.out.println ("Semaphore::Wait() - caught InterruptedException: " + e.getMessage() );
+            } catch (InterruptedException e) {
+                System.out.println("Semaphore::Wait() - caught InterruptedException: " + e.getMessage());
                 e.printStackTrace();
             }
         }
-        this.value--;
     }
-    public synchronized void Signal()
-    {
+
+    public synchronized void Signal() {
         ++this.value;
+        ++mutex;
         notify();
     }
-    public synchronized void P()
-    {
+
+    public synchronized void P() {
         this.Wait();
     }
-    public synchronized void V()
-    {
+
+    public synchronized void V() {
         this.Signal();
     }
 }

@@ -1,13 +1,12 @@
-class BaseThread extends Thread
-{
-        public static int iNextTID = 1; // Preserves value across all instances
-        protected int iTID;
+class BaseThread extends Thread {
+        public static int iNextThreadId = 1;
+        protected int iThreadId;
         public BaseThread() {
-              this.iTID = iNextTID;
-              iNextTID++;
+              this.iThreadId = iNextThreadId;
+              iNextThreadId++;
         }
        public BaseThread(int piTID)
        {
-             this.iTID = piTID;
+             this.iThreadId = piTID;
        }
 }

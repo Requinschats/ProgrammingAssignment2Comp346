@@ -3,33 +3,31 @@ import CharStackExceptions.CharStackFullException;
 import CharStackExceptions.CharStackInvalidAceessException;
 import CharStackExceptions.CharStackInvalidSizeException;
 
-// Source code for character stack:
 class CharStack {
     public static final int MIN_SIZE = 7;
     public static final int MAX_SIZE = 32;
     public static final int DEFAULT_SIZE = 10;
 
-    private static int iSize = DEFAULT_SIZE;
+    private static int stackSize = DEFAULT_SIZE;
     private static int stackTopIndex = 3;
     private static char charStack[] = new char[]{'a', 'b', 'c', 'd', '$', '$', '$', '$', '$', '$'};
 
-    public CharStack() {
-    }
+    public CharStack() {}
 
-    public CharStack(int piSize) throws CharStackInvalidSizeException {
-        if (piSize < MIN_SIZE || piSize > MAX_SIZE) {
-            throw new CharStackInvalidSizeException(piSize);
+    public CharStack(int size) throws CharStackInvalidSizeException {
+        if (size < MIN_SIZE || size > MAX_SIZE) {
+            throw new CharStackInvalidSizeException(size);
         }
-        if (piSize != DEFAULT_SIZE) {
-            this.charStack = new char[piSize];
-            for (int i = 0; i < piSize - 6; i++) {
+        if (size != DEFAULT_SIZE) {
+            this.charStack = new char[size];
+            for (int i = 0; i < size - 6; i++) {
                 this.charStack[i] = (char) ('a' + i);
             }
             for (int i = 1; i <= 6; i++) {
-                this.charStack[piSize - i] = '$';
+                this.charStack[size - i] = '$';
             }
-            this.stackTopIndex = piSize - 7;
-            this.iSize = piSize;
+            this.stackTopIndex = size - 7;
+            this.stackSize = size;
         }
     }
 
@@ -41,14 +39,14 @@ class CharStack {
     }
 
     public char getAt(int piPosition) throws CharStackInvalidAceessException {
-        if (piPosition < 0 || piPosition >= iSize) {
+        if (piPosition < 0 || piPosition >= stackSize) {
             throw new CharStackInvalidAceessException();
         }
         return this.charStack[piPosition];
     }
 
     public static void push(char pcChar) throws CharStackFullException {
-        if (stackTopIndex == iSize - 1) {
+        if (stackTopIndex == stackSize - 1) {
             throw new CharStackFullException();
         }
         charStack[++stackTopIndex] = pcChar;
@@ -63,9 +61,8 @@ class CharStack {
         return cChar;
     }
 
-    /* Getters */
     public int getSize() {
-        return this.iSize;
+        return this.stackSize;
     }
 
     public int getTop() {
