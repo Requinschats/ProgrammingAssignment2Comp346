@@ -7,10 +7,9 @@ public class StackManager {
     private static final int NUM_PROBERS = 1; // Number of threads dumping stack
     private static int numberOfSteps = 3; // Number of steps they take
 
-    public static Semaphore semaphore = new Semaphore(1);
-    // Semaphore declarations. Insert your code in the following:
-    //...
-    //...
+    public static Semaphore mainSemaphore = new Semaphore(0);
+    public static Semaphore turnSemaphore = new Semaphore(-1);
+    public static int producerRunCount = 0;
 
     public static void main(String[] argv) {
         StackManager.printInitialStackStats(stack);
@@ -24,14 +23,13 @@ public class StackManager {
 
         startThreads(ab1, ab2, rb1, rb2, csp);
         closeThreads(ab1, ab2, rb1, rb2, csp);
-
     }
 
     static class Consumer extends BaseThread {
         private char copy;
-
         public void run() {
-            semaphore.Wait();
+            turnSemaphore.Wait();
+            mainSemaphore.Wait();
             System.out.println("Consumer thread [TID=" + this.iThreadId + "] starts executing.");
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
                 // Insert your code in the following:
@@ -43,8 +41,10 @@ public class StackManager {
                 System.out.println("Consumer thread [TID=" + this.iThreadId + "] pops character =" + this.copy);
             }
             System.out.println("Consumer thread [TID=" + this.iThreadId + "] terminates.");
-            semaphore.Signal();
+            mainSemaphore.Signal();
+            turnSemaphore.Signal();
         }
+
     }
 
 
@@ -52,7 +52,7 @@ public class StackManager {
         private char block; // block to be returned
 
         public void run() {
-            semaphore.Wait();
+            mainSemaphore.Wait();
             System.out.println("Producer thread [TID=" + this.iThreadId + "] starts executing.");
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
                 // Insert your code in the following:
@@ -68,25 +68,31 @@ public class StackManager {
                 System.out.println("Producer thread [TID=" + this.iThreadId + "] pushes character =" + this.block);
             }
             System.out.println("Producer thread [TID=" + this.iThreadId + "] terminates.");
-            semaphore.Signal();
+            mainSemaphore.Signal();
+            producerRunCount++;
+            if(producerRunCount == 2){
+                turnSemaphore.Signal();
+            }
         }
     }
 
     static class CharStackProber extends BaseThread {
-        private void printStackContent(int numberOfSteps) throws CharStackInvalidAceessException, CharStackInvalidAceessException {
-            semaphore.Wait();
-            System.out.print("Stack S = (");
-            for (int i = 0; i < 2 * numberOfSteps; i++) {
-                // Insert your code in the following.
-                if(String.valueOf(stack.getAt(i)).matches("^[a-zA-Z]*$")) {
-                    System.out.print("[" + stack.getAt(i) + "]");
-                } else {
-                    System.out.print("[$]");
-                }
+       private void printStackContent(int numberOfSteps) throws CharStackInvalidAceessException, CharStackInvalidAceessException {
+           for (int j = 0; j < 6; j++) {
+               mainSemaphore.Wait();
+               System.out.print("Stack S = (");
+               for (int i = 0; i < 2 * numberOfSteps; i++) {
+                   // Insert your code in the following.
+                   if (String.valueOf(stack.getAt(i)).matches("^[a-zA-Z]*$")) {
+                       System.out.print("[" + stack.getAt(i) + "]");
+                   } else {
+                       System.out.print("[$]");
+                   }
 
-            }
-            System.out.println();
-            semaphore.Signal();
+               }
+               System.out.println();
+               mainSemaphore.Signal();
+           }
         }
         public void run() {
             System.out.println("CharStackProber thread [TID=" + this.iThreadId + "] starts executing.");

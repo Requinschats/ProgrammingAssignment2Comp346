@@ -1,10 +1,9 @@
 class Semaphore {
     private int value;
-    private int mutex;
+    private boolean flag;
 
     public Semaphore(int value) {
         this.value = value;
-        this.mutex = 1;
     }
 
     public Semaphore() {
@@ -13,7 +12,7 @@ class Semaphore {
 
     public synchronized void Wait() {
         this.value--;
-        while (this.mutex < 1) {
+        if(value != -1) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -25,13 +24,10 @@ class Semaphore {
 
     public synchronized void Signal() {
         ++this.value;
-        ++mutex;
         notify();
     }
 
-    public synchronized void P() {
-        this.Wait();
-    }
+    public synchronized void P() {}
 
     public synchronized void V() {
         this.Signal();
