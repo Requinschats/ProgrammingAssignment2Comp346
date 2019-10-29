@@ -1,5 +1,8 @@
 import CharStackExceptions.*;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
 public class StackManager {
 
     private static CharStack stack = new CharStack();
@@ -10,6 +13,7 @@ public class StackManager {
     public static Semaphore mainSemaphore = new Semaphore(0);
     public static Semaphore turnSemaphore = new Semaphore(-1);
     public static int producerRunCount = 0;
+    public static String content;
 
     public static void main(String[] argv) {
         StackManager.printInitialStackStats(stack);
@@ -23,6 +27,11 @@ public class StackManager {
 
         startThreads(ab1, ab2, rb1, rb2, csp);
         closeThreads(ab1, ab2, rb1, rb2, csp);
+        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("text.txt"), StandardCharsets.UTF_8))) {
+            out.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     static class Consumer extends BaseThread {
@@ -31,6 +40,7 @@ public class StackManager {
             turnSemaphore.Wait();
             mainSemaphore.Wait();
             System.out.println("Consumer thread [TID=" + this.iThreadId + "] starts executing.");
+            content += "\nConsumer thread [TID=" + this.iThreadId + "] starts executing.";
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
                 // Insert your code in the following:
                 try {
@@ -39,8 +49,10 @@ public class StackManager {
                     e.printStackTrace();
                 }
                 System.out.println("Consumer thread [TID=" + this.iThreadId + "] pops character =" + this.copy);
+                content += "\nConsumer thread [TID=" + this.iThreadId + "] pops character =" + this.copy;
             }
-            System.out.println("Consumer thread [TID=" + this.iThreadId + "] terminates.");
+            System.out.println("\nConsumer thread [TID=" + this.iThreadId + "] terminates.");
+            content += "\nConsumer thread [TID=" + this.iThreadId + "] terminates.";
             mainSemaphore.Signal();
             turnSemaphore.Signal();
         }
@@ -54,6 +66,7 @@ public class StackManager {
         public void run() {
             mainSemaphore.Wait();
             System.out.println("Producer thread [TID=" + this.iThreadId + "] starts executing.");
+            content += "\nProducer thread [TID=" + this.iThreadId + "] starts executing.";
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
                 // Insert your code in the following:
                 try {
@@ -66,8 +79,10 @@ public class StackManager {
                     e.printStackTrace();
                 }
                 System.out.println("Producer thread [TID=" + this.iThreadId + "] pushes character =" + this.block);
+                content += "\nProducer thread [TID=" + this.iThreadId + "] pushes character =" + this.block;
             }
             System.out.println("Producer thread [TID=" + this.iThreadId + "] terminates.");
+            content += "\nProducer thread [TID=" + this.iThreadId + "] terminates.";
             mainSemaphore.Signal();
             producerRunCount++;
             if(producerRunCount == 2){
@@ -81,12 +96,15 @@ public class StackManager {
            for (int j = 0; j < 6; j++) {
                mainSemaphore.Wait();
                System.out.print("Stack S = (");
-               for (int i = 0; i < 2 * numberOfSteps; i++) {
+               content += "Stack S = (";
+               for (int i = 0; i < 10; i++) {
                    // Insert your code in the following.
                    if (String.valueOf(stack.getAt(i)).matches("^[a-zA-Z]*$")) {
                        System.out.print("[" + stack.getAt(i) + "]");
+                       content += "[" + stack.getAt(i) + "]";
                    } else {
                        System.out.print("[$]");
+                       content += "[$]";
                    }
 
                }
@@ -96,6 +114,7 @@ public class StackManager {
         }
         public void run() {
             System.out.println("CharStackProber thread [TID=" + this.iThreadId + "] starts executing.");
+            content += "\nCharStackProber thread [TID=" + this.iThreadId + "] starts executing.";
             try {
                 printStackContent(StackManager.numberOfSteps);
             } catch (CharStackInvalidAceessException e) {

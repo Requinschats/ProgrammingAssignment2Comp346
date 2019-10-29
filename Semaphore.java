@@ -1,7 +1,5 @@
 class Semaphore {
     private int value;
-    private boolean flag;
-
     public Semaphore(int value) {
         this.value = value;
     }
