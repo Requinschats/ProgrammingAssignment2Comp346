@@ -38,11 +38,10 @@ public class StackManager {
         private char copy;
         public void run() {
             turnSemaphore.Wait();
-            mainSemaphore.Wait();
             System.out.println("Consumer thread [TID=" + this.iThreadId + "] starts executing.");
             content += "\nConsumer thread [TID=" + this.iThreadId + "] starts executing.";
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
-                // Insert your code in the following:
+                mainSemaphore.Wait();
                 try {
                     this.copy = CharStack.pop();
                 } catch (CharStackEmptyException e) {
@@ -50,10 +49,10 @@ public class StackManager {
                 }
                 System.out.println("Consumer thread [TID=" + this.iThreadId + "] pops character =" + this.copy);
                 content += "\nConsumer thread [TID=" + this.iThreadId + "] pops character =" + this.copy;
+                mainSemaphore.Signal();
             }
             System.out.println("\nConsumer thread [TID=" + this.iThreadId + "] terminates.");
             content += "\nConsumer thread [TID=" + this.iThreadId + "] terminates.";
-            mainSemaphore.Signal();
             turnSemaphore.Signal();
         }
 
@@ -64,26 +63,23 @@ public class StackManager {
         private char block; // block to be returned
 
         public void run() {
-            mainSemaphore.Wait();
             System.out.println("Producer thread [TID=" + this.iThreadId + "] starts executing.");
             content += "\nProducer thread [TID=" + this.iThreadId + "] starts executing.";
             for (int i = 0; i < StackManager.numberOfSteps; i++) {
-                // Insert your code in the following:
+                mainSemaphore.Wait();
                 try {
                     char charToPush = (char) (CharStack.pick() + 1);
                     CharStack.push(charToPush);
                     block = charToPush;
-                } catch (CharStackFullException e) {
-                    e.printStackTrace();
-                } catch (CharStackEmptyException e) {
+                } catch (CharStackFullException | CharStackEmptyException e) {
                     e.printStackTrace();
                 }
                 System.out.println("Producer thread [TID=" + this.iThreadId + "] pushes character =" + this.block);
                 content += "\nProducer thread [TID=" + this.iThreadId + "] pushes character =" + this.block;
+                mainSemaphore.Signal();
             }
             System.out.println("Producer thread [TID=" + this.iThreadId + "] terminates.");
             content += "\nProducer thread [TID=" + this.iThreadId + "] terminates.";
-            mainSemaphore.Signal();
             producerRunCount++;
             if(producerRunCount == 2){
                 turnSemaphore.Signal();
@@ -127,7 +123,7 @@ public class StackManager {
         try {
             System.out.println("Main thread starts executing.");
             System.out.println("Initial value of top = " + stack.getTop() + ".");
-            System.out.println("Initial value of stack top = " + stack.pick() + ".");
+            System.out.println("Initial value of stack top = " + CharStack.pick() + ".");
             System.out.println("Main thread will now fork several threads.");
         } catch (CharStackEmptyException e) {
             System.out.println("Caught exception: StackCharEmptyException");
@@ -147,7 +143,7 @@ public class StackManager {
 
             System.out.println("System terminates normally.");
             System.out.println("Final value of top = " + stack.getTop() + ".");
-            System.out.println("Final value of stack top = " + stack.pick() + ".");
+            System.out.println("Final value of stack top = " + CharStack.pick() + ".");
             System.out.println("Final value of stack top-1 = " + stack.getAt(stack.getTop() - 1) + ".");
             // TODO: fix System.out.println("Stack access count = " + stack.getAccessCounter());
         } catch (InterruptedException e) {

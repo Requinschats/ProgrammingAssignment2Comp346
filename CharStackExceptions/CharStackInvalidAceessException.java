@@ -1,6 +1,8 @@
 package CharStackExceptions;
 
-public class CharStackInvalidAceessException extends Exception
-{
-    // Fill it up yourself
+public class CharStackInvalidAceessException extends Exception {
+    public CharStackInvalidAceessException()
+    {
+        super("Invalid Access");
+    }
 }
